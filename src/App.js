@@ -2,19 +2,27 @@ import React, { Component } from "react";
 import "./App.css";
 import loadMaps from "./utils/googleMaps";
 import venues from "./utils/foursquareVenue";
+import SideBar from "./Sidebar";
+import MenuButton from "./MenuButton";
 
 class App extends Component {
   state = {
-    query: ""
+    query: "",
+    filteredHotels: [],
+    visible: false
   };
+
   componentDidMount() {
     Promise.all([loadMaps(), venues()]).then(res => {
       let google = res[0];
       let places = res[1].json();
       this.google = google;
-      this.infowindow = new google.maps.InfoWindow();
+      let largeInfoWindow = new google.maps.InfoWindow();
+      this.infoWindow = largeInfoWindow;
       this.bounds = new google.maps.LatLngBounds();
       this.markers = [];
+
+      //promise
       places
         .then(res => {
           return res.response.groups[0].items;
@@ -27,6 +35,11 @@ class App extends Component {
               lng: items[0].venue.location.lng
             }
           });
+          //we are having a refernce  to all hotel since
+          // in component since component will dsiplay only
+          //filtered hotles
+          this.allhotels = items;
+          this.setState({ filteredHotels: this.allhotels });
           items.forEach(item => {
             let marker = new google.maps.Marker({
               map: this.map,
@@ -41,27 +54,86 @@ class App extends Component {
             this.bounds.extend(marker.position);
 
             this.markers.push(marker);
-            // marker.addEventListener("click", function() {
-            //   // showInfo(this);
-            // });
+            marker.addListener("click", function() {
+              populateInfoWindow(this, largeInfoWindow);
+            });
           });
+          //map extends to fit markers
           this.map.fitBounds(this.bounds);
+          //show info window if not laready showing for that particular
+          //window
+          let populateInfoWindow = (marker, infoWindow) => {
+            if (infoWindow.marker !== marker) {
+              infoWindow.marker = marker;
+              infoWindow.setContent(`<div>${marker.title}</div>`);
+              infoWindow.open(this.map, marker);
+              infoWindow.addListener("closeclick", function() {
+                infoWindow.close();
+              });
+            }
+          };
         });
     });
   }
-
-  changeQuery(query) {
+  //Input controlled by component through query
+  changeQuery = nQuery => {
     this.setState(
       {
-        query
+        query: nQuery.trim()
       },
-      this.filterVenues
+      this.filterHotels
     );
-  }
+  };
+  toggleMenu = () => {
+    this.setState({
+      visible: !this.state.visible
+    });
+  };
 
-  filterVenues() {
+  handleMouseDown = e => {
+    this.toggleMenu();
+
+    console.log("clicked");
+    //e.stopPropagation();
+  };
+
+  showMarker = hotel => {
+    //find the marker via unique id
+    let matchMarker = this.markers.filter(marker => {
+      return marker.id === hotel.venue.id;
+    });
+
+    //open infoview of matched marker
+    this.infoWindow.marker = matchMarker[0];
+    this.infoWindow.setContent(`<div>${matchMarker[0].title}</div>`);
+    this.infoWindow.open(this.map, matchMarker[0]);
+
+    //animate  marker
+
+    if (matchMarker[0].getAnimation() !== null) {
+      matchMarker[0].setAnimation(null);
+    } else {
+      matchMarker[0].setAnimation(this.google.maps.Animation.BOUNCE);
+    }
+    setTimeout(() => {
+      matchMarker[0].setAnimation(null);
+    }, 400);
+  };
+
+  /***** ******************************************/
+
+  filterHotels() {
+    this.infoWindow.close();
+    let filteredHotels = this.allhotels.filter(hotel => {
+      return hotel.venue.name
+        .toLowerCase()
+        .includes(this.state.query.toLowerCase());
+    });
+
+    this.setState({
+      filteredHotels
+    });
     this.markers.forEach(marker => {
-      console.log(marker);
       let query = this.state.query.toLowerCase();
       let markerTitle = marker.title.toLowerCase();
 
@@ -70,21 +142,24 @@ class App extends Component {
         : marker.setVisible(false);
     });
   }
+  /********************** *********************************/
 
   render() {
     return (
       <main>
         <div id="map"> </div>
-        <div id="sidebar">
-          <input
-            id="filter-input"
-            value={this.state.query}
-            placeholder="filter"
-            onChange={e => {
-              this.changeQuery(e.target.value);
-            }}
-          />
-        </div>
+        <MenuButton
+          handleMouseDown={this.handleMouseDown}
+          visible={this.state.visible}
+        />
+        <SideBar
+          value={this.state.query}
+          changeQuery={this.changeQuery}
+          filteredHotels={this.state.filteredHotels}
+          showMarker={this.showMarker}
+          visible={this.state.visible}
+          handleMouseDown={this.handleMouseDown}
+        />
       </main>
     );
   }
