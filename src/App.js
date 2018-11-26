@@ -9,7 +9,7 @@ class App extends Component {
   state = {
     query: "",
     filteredHotels: [],
-    visible: false
+    sidebarVisible: false
   };
 
   componentDidMount() {
@@ -92,10 +92,10 @@ class App extends Component {
           });
       })
       .catch(e => {
-        alert("The page did'nt load properly! Please reoload the page");
+        alert("The page didn't load properly! Please reoload the page");
       });
   }
-  //Input controlled by component through query
+  //Input controlled by component through query state
   changeQuery = nQuery => {
     this.setState(
       {
@@ -106,7 +106,7 @@ class App extends Component {
   };
   toggleMenu = () => {
     this.setState({
-      visible: !this.state.visible
+      sidebarVisible: !this.state.sidebarVisible
     });
   };
 
@@ -190,12 +190,12 @@ class App extends Component {
         <header id="header" role="banner">
           <h1>Neighbourhood Map</h1>
         </header>
-        <div id="map" aria-label="location" role="application">
+        <div id="map" tabIndex="2" aria-label="location" role="application">
           {" "}
         </div>
         <MenuButton
           handleMouseDown={this.handleMouseDown}
-          visible={this.state.visible}
+          sidebarVisible={this.state.sidebarVisible}
           hambKeyPress={this.hambKeyPress}
         />
         <SideBar
@@ -203,7 +203,7 @@ class App extends Component {
           changeQuery={this.changeQuery}
           filteredHotels={this.state.filteredHotels}
           showMarker={this.showMarker}
-          visible={this.state.visible}
+          sidebarVisible={this.state.sidebarVisible}
           handleMouseDown={this.handleMouseDown}
           closeKeyEnter={this.closeKeyEnter}
           listItemEnter={this.listItemEnter}

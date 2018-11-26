@@ -2,15 +2,10 @@ import React, { Component } from "react";
 import "font-awesome/css/font-awesome.min.css";
 
 class SideBar extends Component {
-  constructor(props) {
-    super(props);
-    this.textInput = React.createRef();
-  }
-
   render() {
     let visibility = "hide";
 
-    if (this.props.visible) {
+    if (this.props.sidebarVisible) {
       visibility = "show";
     }
     return (
@@ -18,16 +13,17 @@ class SideBar extends Component {
       // if class = show then display it orelse hide it
       <div
         id="sidebar"
-        aria-hidden={String(!this.props.visible)}
+        aria-hidden={String(!this.props.sidebarVisible)}
         className={visibility}
       >
-        <div
-          id="close"
-          tabIndex="0"
-          onMouseDown={this.props.handleMouseDown}
-          onKeyDown={this.props.closeKeyEnter}
-        >
-          <button>
+        <div>
+          <button
+            id="close"
+            tabIndex="0"
+            aria-label="Close"
+            onMouseDown={this.props.handleMouseDown}
+            onKeyDown={this.props.closeKeyEnter}
+          >
             {" "}
             <i className="fa fa-window-close fa-3x"> </i>
           </button>
@@ -36,6 +32,7 @@ class SideBar extends Component {
           id="filter-input"
           tabIndex="0"
           role="search"
+          aria-label="search"
           value={this.props.query}
           placeholder="Filter Hotels"
           onChange={e => {
@@ -50,6 +47,7 @@ class SideBar extends Component {
               key={i}
               tabIndex="0"
               className="sidebar-item"
+              role="button"
               onClick={() => {
                 this.props.showMarker(hotel);
               }}
