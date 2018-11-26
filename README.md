@@ -21,3 +21,4 @@ In this project, I was asked to fetch locations from api / display hardcoded loc
 - The list view items can be clicked to display the respective hotel location on map along with its l ocation
 - CRA comes inbuilt with ServiceWorker whcih can be enabled by removing the unregister method with register method
 - I have the made the app responsive and accessible
+- I load recommended places for a particular city from Foursquare API and map the locations through Google Maps Api. When the markers or the list view is clicked, the address derived from the Foursquare api is shown along with a marker animation

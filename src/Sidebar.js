@@ -14,6 +14,8 @@ class SideBar extends Component {
       visibility = "show";
     }
     return (
+      //display sidebar based on class show or hide
+      // if class = show then display it orelse hide it
       <div
         id="sidebar"
         aria-hidden={String(!this.props.visible)}
@@ -40,7 +42,7 @@ class SideBar extends Component {
             this.props.changeQuery(e.target.value);
           }}
         />{" "}
-        <i className="fa fa-filter fa-2x  " />
+        <i className="fa fa-filter fa-2x " aria-label="hidden" />
         {this.props.filteredHotels &&
           this.props.filteredHotels.length > 0 &&
           this.props.filteredHotels.map((hotel, i) => (

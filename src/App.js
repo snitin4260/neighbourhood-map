@@ -39,10 +39,11 @@ class App extends Component {
             //we are having a refernce  to all hotel since
             // in component 's state will display only
             //filtered hotles
+            let hotelIds = [];
             this.allhotels = items;
             this.setState({ filteredHotels: this.allhotels });
             items.forEach(item => {
-              console.log(item.venue.location.formattedAddress);
+              hotelIds.push(item.venue.id);
               let marker = new google.maps.Marker({
                 map: this.map,
                 position: {
@@ -91,7 +92,7 @@ class App extends Component {
           });
       })
       .catch(e => {
-        alert(e);
+        alert("The page did'nt load properly! Please reoload the page");
       });
   }
   //Input controlled by component through query
@@ -153,7 +154,6 @@ class App extends Component {
   };
 
   hambKeyPress = event => {
-    console.log(event.target);
     var code = event.keyCode || event.which;
     if (code === 13) {
       this.handleMouseDown();
