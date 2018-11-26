@@ -9,6 +9,16 @@ body {
   box-sizing: border-box;
 }
 
+h1 {
+  background-color: rgba(0, 0, 0, 0.5);
+  margin: 0;
+  padding: 15px;
+}
+
+/* #header {
+  position: fixed;
+} */
+
 ::-webkit-input-placeholder {
   /* Chrome/Opera/Safari */
   color: blue;
@@ -17,14 +27,15 @@ body {
 
 #map {
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 68px);
+
 }
 
 #sidebar {
   position: absolute;
-  top: 0;
+  top: 68px;
   left: 0;
-  height: 100vh;
+  height: calc(100vh - 68px);
   overflow-y: scroll;
   width: 300px;
   background-color: white;
@@ -35,6 +46,10 @@ body {
 
 }
 
+.sidebar-item:focus {
+  border: 1px soldi blue;
+}
+
 @media screen and (max-width: 400px) {
   #sidebar {
     width: 100%;
@@ -43,10 +58,12 @@ body {
 
 #sidebar.hide {
   transform: translate3d(-100vw, 0, 0);
+  display: none;
 }
 
 #sidebar.show {
   transform: translate3d(0vw, 0, 0);
+  display: block;
 
 }
 
@@ -61,8 +78,12 @@ body {
   margin: 10px auto;
   font-size: 20px;
   border: 2px solid #808000;
+  -webkit-box-shadow: -2px 14px 12px -10px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: -2px 14px 12px -10px rgba(0, 0, 0, 0.75);
+  box-shadow: -2px 14px 12px -10px rgba(0, 0, 0, 0.75);
 
 }
+
 
 .sidebar-item {
   width: 80%;
@@ -71,4 +92,19 @@ body {
   margin-bottom: 10px;
   border: 1px solid black;
   cursor: pointer;
+}
+
+.fa-filter {
+  position: absolute;
+  right: 39px;
+  top: 65px;
+
+
+}
+
+@media screen and (max-width: 400px) {
+  .fa-filter {
+    right: 45px;
+  }
+
 }

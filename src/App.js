@@ -13,67 +13,86 @@ class App extends Component {
   };
 
   componentDidMount() {
-    Promise.all([loadMaps(), venues()]).then(res => {
-      let google = res[0];
-      let places = res[1].json();
-      this.google = google;
-      let largeInfoWindow = new google.maps.InfoWindow();
-      this.infoWindow = largeInfoWindow;
-      this.bounds = new google.maps.LatLngBounds();
-      this.markers = [];
+    Promise.all([loadMaps(), venues()])
+      .then(res => {
+        let google = res[0];
+        let places = res[1].json();
+        this.google = google;
+        let largeInfoWindow = new google.maps.InfoWindow();
+        this.infoWindow = largeInfoWindow;
+        this.bounds = new google.maps.LatLngBounds();
+        this.markers = [];
 
-      //promise
-      places
-        .then(res => {
-          return res.response.groups[0].items;
-        })
-        .then(items => {
-          this.map = new google.maps.Map(document.getElementById("map"), {
-            zoom: 11,
-            center: {
-              lat: items[0].venue.location.lat,
-              lng: items[0].venue.location.lng
-            }
-          });
-          //we are having a refernce  to all hotel since
-          // in component since component will dsiplay only
-          //filtered hotles
-          this.allhotels = items;
-          this.setState({ filteredHotels: this.allhotels });
-          items.forEach(item => {
-            let marker = new google.maps.Marker({
-              map: this.map,
-              position: {
-                lat: item.venue.location.lat,
-                lng: item.venue.location.lng
-              },
-              title: item.venue.name,
-              animation: google.maps.Animation.DROP,
-              id: item.venue.id
+        //promise
+        places
+          .then(res => {
+            return res.response.groups[0].items;
+          })
+          .then(items => {
+            this.map = new google.maps.Map(document.getElementById("map"), {
+              zoom: 11,
+              center: {
+                lat: items[0].venue.location.lat,
+                lng: items[0].venue.location.lng
+              }
             });
-            this.bounds.extend(marker.position);
-
-            this.markers.push(marker);
-            marker.addListener("click", function() {
-              populateInfoWindow(this, largeInfoWindow);
-            });
-          });
-          //map extends to fit markers
-          this.map.fitBounds(this.bounds);
-          //show info window if not laready showing for that particular
-          //window
-          let populateInfoWindow = (marker, infoWindow) => {
-            if (infoWindow.marker !== marker) {
-              infoWindow.marker = marker;
-              infoWindow.setContent(`<div>${marker.title}</div>`);
-              infoWindow.open(this.map, marker);
-              infoWindow.addListener("closeclick", function() {
-                infoWindow.close();
+            //we are having a refernce  to all hotel since
+            // in component 's state will display only
+            //filtered hotles
+            this.allhotels = items;
+            this.setState({ filteredHotels: this.allhotels });
+            items.forEach(item => {
+              console.log(item.venue.location.formattedAddress);
+              let marker = new google.maps.Marker({
+                map: this.map,
+                position: {
+                  lat: item.venue.location.lat,
+                  lng: item.venue.location.lng
+                },
+                title: item.venue.name,
+                animation: google.maps.Animation.DROP,
+                id: item.venue.id,
+                address: item.venue.location.formattedAddress
               });
-            }
-          };
-        });
-    });
+              this.bounds.extend(marker.position);
+              let self = this;
+
+              this.markers.push(marker);
+              marker.addListener("click", function() {
+                populateInfoWindow(this, largeInfoWindow);
+                if (marker.getAnimation() !== null) {
+                  marker.setAnimation(null);
+                } else {
+                  marker.setAnimation(self.google.maps.Animation.BOUNCE);
+                }
+                setTimeout(() => {
+                  marker.setAnimation(null);
+                }, 400);
+              });
+            });
+            //map extends to fit markers
+            this.map.fitBounds(this.bounds);
+            //show info window if not laready showing for that particular
+            //window
+            let populateInfoWindow = (marker, infoWindow) => {
+              if (infoWindow.marker !== marker) {
+                infoWindow.marker = marker;
+                infoWindow.setContent(
+                  `<div>${marker.title}<br><p></p>${marker.address.join(
+                    " "
+                  )}</p></div>`
+                );
+                infoWindow.open(this.map, marker);
+                infoWindow.addListener("closeclick", function() {
+                  infoWindow.close();
+                });
+              }
+            };
+          });
+      })
+      .catch(e => {
+        alert(e);
+      });
   }
   //Input controlled by component through query
   changeQuery = nQuery => {
@@ -92,9 +111,6 @@ class App extends Component {
 
   handleMouseDown = e => {
     this.toggleMenu();
-
-    console.log("clicked");
-    //e.stopPropagation();
   };
 
   showMarker = hotel => {
@@ -105,7 +121,9 @@ class App extends Component {
 
     //open infoview of matched marker
     this.infoWindow.marker = matchMarker[0];
-    this.infoWindow.setContent(`<div>${matchMarker[0].title}</div>`);
+    this.infoWindow.setContent(
+      `<div>${matchMarker[0].title}<br><p>${matchMarker[0].address}</p></div>`
+    );
     this.infoWindow.open(this.map, matchMarker[0]);
 
     //animate  marker
@@ -118,6 +136,28 @@ class App extends Component {
     setTimeout(() => {
       matchMarker[0].setAnimation(null);
     }, 400);
+  };
+
+  closeKeyEnter = event => {
+    var code = event.keyCode || event.which;
+    if (code === 13) {
+      this.handleMouseDown();
+    }
+  };
+
+  listItemEnter = (event, hotel) => {
+    var code = event.keyCode || event.which;
+    if (code === 13) {
+      this.showMarker(hotel);
+    }
+  };
+
+  hambKeyPress = event => {
+    console.log(event.target);
+    var code = event.keyCode || event.which;
+    if (code === 13) {
+      this.handleMouseDown();
+    }
   };
 
   /***** ******************************************/
@@ -147,10 +187,16 @@ class App extends Component {
   render() {
     return (
       <main>
-        <div id="map"> </div>
+        <header id="header" role="banner">
+          <h1>Neighbourhood Map</h1>
+        </header>
+        <div id="map" aria-label="location" role="application">
+          {" "}
+        </div>
         <MenuButton
           handleMouseDown={this.handleMouseDown}
           visible={this.state.visible}
+          hambKeyPress={this.hambKeyPress}
         />
         <SideBar
           value={this.state.query}
@@ -159,6 +205,8 @@ class App extends Component {
           showMarker={this.showMarker}
           visible={this.state.visible}
           handleMouseDown={this.handleMouseDown}
+          closeKeyEnter={this.closeKeyEnter}
+          listItemEnter={this.listItemEnter}
         />
       </main>
     );

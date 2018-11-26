@@ -7,9 +7,11 @@ class MenuButton extends Component {
 
     return (
       <button
+        tabIndex="0"
         aria-hidden={visibility}
         id="roundButton"
         onMouseDown={this.props.handleMouseDown}
+        onKeyDown={this.props.hambKeyPress}
       >
         {" "}
       </button>
