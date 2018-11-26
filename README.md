@@ -20,4 +20,4 @@ In this project, I was asked to fetch locations from api / display hardcoded loc
 - The list view has search functionality. The search filters the markers on map as well as the list view
 - The list view items can be clicked to display the respective hotel location on map along with its l ocation
 - CRA comes inbuilt with ServiceWorker whcih can be enabled by removing the unregister method with register method
--
+- I have the made the app responsive and accessible
